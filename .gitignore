@@ -55,6 +55,7 @@ baserom*
 *.n64
 *.ndd
 *.z64dd
+dspfirm.cdc
 
 # Local build helpers (machine-specific absolute paths) and logs
 build-lus.bat
@@ -102,6 +103,15 @@ logs/
 /tools/o2r_harness/golden_out/
 build-3ds/
 build-3ds-clean/
+/build-*/
+/sdmc:/
+/gdiffuser.ini
+/experiments/local/
+*.3dsx
+*.cia
+*.elf
+*.sav
+*.sav.tmp
 build-host-stub/
 build-port-host/
 # Local CIA packaging binaries (makerom, bannertool) -- downloaded/built per

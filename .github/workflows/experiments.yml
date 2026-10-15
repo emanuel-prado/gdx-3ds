@@ -1,0 +1,24 @@
+name: Experiment checks
+
+on:
+  push:
+    branches: ['experiment/**']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  host:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Fetch pinned decomp headers
+        run: git submodule update --init --depth 1 decomp
+      - name: Portable port checks (no ROM required)
+        run: bash tools/test-host.sh
+      - name: Benchmark analyzer checks (no ROM required)
+        run: python3 -m unittest discover -s tools/benchmark_3ds -p 'test_*.py'

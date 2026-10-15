@@ -39,6 +39,11 @@
 #include "gdx3ds_fs.h"
 #include "gdx3ds_os.h"
 #include "gdx3ds_renderthread.h" // RENDER THREAD (LOCKED-60 Task H): core-2 fork/join
+#ifdef GDX3DS_BENCHMARK
+extern "C" void gdx3ds_benchmark_init(void);
+extern "C" void gdx3ds_benchmark_finish(void);
+extern "C" void gdx3ds_benchmark_pace(void);
+#endif
 
 #include <cstdint>
 #include <cstdio>
@@ -728,6 +733,9 @@ int main(int argc, char** argv) {
     //    deviation from desktop is deliberate.
     logStep("gdx3ds_config_load");
     gdx3ds_config_load(GDX3DS_CONFIG_DEFAULT_PATH);
+#ifdef GDX3DS_BENCHMARK
+    gdx3ds_benchmark_init();
+#endif
 
     // S2 MALLOC-CRAWL: arm the allocation-size histogram if requested. env wins over the INI key so
     // a run can enable it without editing sdmc:/3ds/gdiffuser/gdiffuser.ini ([debug] section).
@@ -1048,6 +1056,9 @@ int main(int argc, char** argv) {
         if (rtMode != 0) {
             gdx3ds_rt_pace_vblank(); // main owns the vblank alignment (render thread: FrameBegin(0))
         }
+#ifdef GDX3DS_BENCHMARK
+        gdx3ds_benchmark_pace();
+#endif
         if (GDX3DS_BOOT_TRACE || frameNum < 8 || (verboseTelemetry && (frameNum & 63) == 0)) {
             char hb[48];
             int n = std::snprintf(hb, sizeof(hb), "frame %lu", (unsigned long)frameNum);
@@ -1269,6 +1280,9 @@ int main(int argc, char** argv) {
                       gdx3ds_audio_suspended());
         aptLogReceipt(cause);
     }
+#ifdef GDX3DS_BENCHMARK
+    gdx3ds_benchmark_finish();
+#endif
     gdx_disk_save_flush();
     aptLogReceipt("[exit] disk_save_flush done");
     aptLogReceipt("[exit] audio_thread_stop enter");

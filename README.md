@@ -1,5 +1,15 @@
 # G-Diffuser 3DS — F-Zero X on the Nintendo 3DS
 
+> **Experimental fork:** [emanuel-prado/gdx-3ds](https://github.com/emanuel-prado/gdx-3ds).
+> Start with [fork development](docs/FORK-DEVELOPMENT.md) for local builds and private
+> experiments. [OG 3DS investigation](docs/research/og3ds-bottlenecks.md) records the
+> current blockers; original 3DS support has **not** been established.
+> [Native 3DS architecture](docs/NATIVE-3DS-ARCHITECTURE.md) plans a staged replacement
+> of graphics, assets, scheduling and audio, targeting OG hardware at 60 fps.
+> Release links and hardware results below describe the upstream project.
+>
+> Linux development tools and verified build commands: [local setup](docs/LOCAL-SETUP.md).
+
 A homebrew port of the **F-Zero X decompilation** to the New Nintendo 3DS / New 2DS,
 built on the G-Diffuser PC port. Runs natively on console hardware with stereoscopic
 3D, full audio, and a touch-screen settings menu.

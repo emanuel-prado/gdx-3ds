@@ -34,6 +34,12 @@
 #include "ship/config/ConsoleVariable.h"
 #include "libultraship/bridge/consolevariablebridge.h"
 
+/* The full game owns this in gdx3ds_renderthread.cpp. An undefined weak TLS
+ * reference in the backend logger leaves invalid TLS/GOT accesses in the
+ * standalone ARM 3dsx; provide real storage even though this app has no worker.
+ * The harness always prints to its own bottom-screen console. */
+__thread int gdx_port_log_console_muted = 0;
+
 /* ------------------------------------------------------------------------- */
 /* 1. Ship::Context                                                           */
 /* ------------------------------------------------------------------------- */

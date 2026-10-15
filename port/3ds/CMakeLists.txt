@@ -9,6 +9,8 @@
 # Cross-compile: cmake -DCMAKE_TOOLCHAIN_FILE=$DEVKITPRO/cmake/3DS.cmake -DGDX_PLATFORM_3DS=ON
 # The devkitPro toolchain defines NINTENDO_3DS and provides ctr_create_3dsx().
 
+option(GDX3DS_BENCHMARK "Build opt-in M0 measurement hooks (not a gameplay build)" OFF)
+
 add_subdirectory(gfx)
 add_subdirectory(os)
 add_subdirectory(audio)
@@ -24,6 +26,15 @@ target_include_directories(G-Diffuser-3DS PRIVATE include)
 target_link_libraries(G-Diffuser-3DS PRIVATE gdx3ds_os gdx3ds_audio gdx3ds_assets)
 
 if(NINTENDO_3DS)
+    if(GDX3DS_BENCHMARK)
+        target_sources(G-Diffuser-3DS PRIVATE gdx3ds_benchmark.cpp)
+        target_compile_definitions(G-Diffuser-3DS PRIVATE GDX3DS_BENCHMARK=1)
+        target_include_directories(G-Diffuser-3DS PRIVATE os)
+        target_link_options(G-Diffuser-3DS PRIVATE
+            -Wl,--wrap=func_800690FC -Wl,--wrap=func_80069698
+            -Wl,--wrap=Race_Init
+            -Wl,--wrap=gdx_gfx_run -Wl,--wrap=gdx_vi_present_fallback)
+    endif()
     # Full game link: decomp + bridge objects, LUS carve + citro3d backend, the
     # miniz-backed libzip surface (O2rArchive), and the lus_glue link stubs
     # (Ship::Context / ConsoleVariable / Fast3dWindow replacements — see lus_glue/).

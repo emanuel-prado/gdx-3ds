@@ -49,6 +49,9 @@ add_library(gdx3ds_game OBJECT ${GAME_SOURCES} ${GDX_GAME_CORE_SOURCES}
     gdx3ds_us_linkstubs.c   # EK=OFF stand-ins for n64_leo.c/EkLinkStubs.c symbols
     gdx3ds_livery_diag.c    # SHIP-LIVERY-2 [livery] game-state receipts (weak-called by gfx)
 )
+if(GDX3DS_BENCHMARK)
+    target_sources(gdx3ds_game PRIVATE gdx3ds_benchmark_state.c)
+endif()
 
 target_include_directories(gdx3ds_game PRIVATE
     "${DECOMP}"            # decomp root: the C uses includes relative to it (e.g. "src/audio/...")
