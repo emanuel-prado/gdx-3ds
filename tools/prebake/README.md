@@ -141,3 +141,16 @@ collisions — identical to the PC.
   side mounts them.
 - **JP profile**: experimental on desktop, no validated golden; excluded
   here until one exists.
+
+## Experimental native M1a output
+
+After this workflow has produced your validated `fzerox.o2r`, compile the first
+independent native pack without modifying the archives:
+
+```sh
+python3 tools/native_assets/compile_machine.py --archive dist/sdmc/3ds/gdiffuser/fzerox.o2r
+bash tools/dev.sh native-build
+```
+
+It writes only under `dist/native/`, for `sdmc:/3ds/gdiffuser-native/`.
+See [native asset compilation, format and hardware instructions](../native_assets/README.md).

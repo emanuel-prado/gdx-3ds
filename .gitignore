@@ -121,3 +121,6 @@ build-port-host/
 # Full-session controller recordings and temporary captures (local fixtures only)
 *.gdr
 *.gdr.tmp
+
+# Offline native packs contain user-extracted game data.
+*.gdnp
