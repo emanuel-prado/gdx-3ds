@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "gdx3ds_config.h"
+#include "../gdx_replay.h"
 
 extern "C" {
 void __real_func_800690FC(void);
@@ -16,6 +17,7 @@ void __real_gdx_vi_present_fallback(void);
 void __real_Race_Init(void);
 void gdx3ds_benchmark_race_seed(void);
 void gdx3ds_benchmark_state(unsigned int out[11]);
+void gdx3ds_replay_state(unsigned int out[20]);
 void gdx_request_quit(void);
 void gdx3ds_gpuprof_set_external_pacing(int on);
 extern u32 __ctru_heap_size, __ctru_linear_heap_size;
@@ -34,6 +36,17 @@ int sMode;
 uint64_t sUpdate;
 bool sFinished;
 bool sRaceOnly;
+int sReplay, sReplayGraphics;
+bool sReplayComplete, sReplayFailed;
+constexpr char kReplayOutput[] = "sdmc:/3ds/gdiffuser/capture.gdr";
+constexpr char kReplayTemporary[] = "sdmc:/3ds/gdiffuser/capture.gdr.tmp";
+void ReplayFailure() {
+    sReplayFailed = true;
+    char msg[200];
+    std::snprintf(msg, sizeof(msg), "[replay] ERROR %s", gdx_replay_error());
+    svcOutputDebugString(msg, std::strlen(msg));
+    gdx_request_quit();
+}
 constexpr char kOutput[] = "sdmc:/3ds/gdiffuser/benchmark.csv";
 
 void Receipt(const char* message) {
@@ -63,6 +76,35 @@ void MemoryReceipt(const char* phase) {
 }
 
 extern "C" void gdx3ds_benchmark_init(void) {
+    sReplay = gdx3ds_config_get_int("replay", "mode", 0);
+    if (sReplay) {
+        char identity[65] = {};
+        FILE* f = std::fopen("sdmc:/3ds/gdiffuser/replay-identity.txt", "rb");
+        if (f) { std::fread(identity, 1, 64, f); std::fclose(f); }
+        sReplayGraphics = gdx3ds_config_get_int("replay", "graphics", 1);
+        // A replay cannot silently combine with M0's scripted/race-reset scenario.
+        if (gdx3ds_config_get_int("benchmark", "mode", 0) ||
+            (sReplay == 2 && getenv("GDX_INPUT_SCRIPT")) ||
+            (sReplayGraphics != 1 && sReplayGraphics != 2)) {
+            Receipt("[replay] ERROR conflicting input/benchmark or invalid graphics mode");
+            sReplayFailed = true;
+            gdx_request_quit();
+            return;
+        }
+        if (gdx_replay_open(sReplay, "sdmc:/3ds/gdiffuser/session.gdr", kReplayTemporary, identity) < 0) {
+            ReplayFailure(); return;
+        }
+        gdx3ds_config_set_int("debug", "renderthread", 0);
+        gdx3ds_config_set_int("perf", "rival_detail", 0);
+        gdx3ds_config_set_int("perf", "rival_detail_auto", 0);
+        gdx3ds_config_set_int("stereo", "enabled", 0);
+        gdx3ds_config_set_int("menu", "enabled", 0);
+        gdx3ds_gpuprof_set_external_pacing(1);
+        setenv("GDX_RAND_SEED1", "12345", 1);
+        setenv("GDX_RAND_SEED2", "67890", 1);
+        Receipt("[replay] controlled boot; full-session poll capture enabled");
+        return;
+    }
     sMode = gdx3ds_config_get_int("benchmark", "mode", 0);
     if (sMode < 1 || sMode > 2) { sMode = 0; return; }
     int limit = gdx3ds_config_get_int("benchmark", "frames", 3000);
@@ -85,7 +127,8 @@ extern "C" void gdx3ds_benchmark_init(void) {
 }
 
 extern "C" void gdx3ds_benchmark_pace(void) {
-    if (sMode) gspWaitForVBlank();
+    if (sReplay && !sReplayFailed && gdx_replay_service() < 0) ReplayFailure();
+    if (sMode || sReplay) gspWaitForVBlank();
 }
 
 extern "C" void __wrap_Race_Init(void) {
@@ -119,6 +162,10 @@ extern "C" void* __wrap_func_80069698(void* gfx) {
 }
 
 extern "C" void __wrap_gdx_gfx_run(void* dl, size_t bytes, int ucode) {
+    if (sReplay) {
+        if (sReplayGraphics != 2) __real_gdx_gfx_run(dl, bytes, ucode);
+        return;
+    }
     if (!sMode) { __real_gdx_gfx_run(dl, bytes, ucode); return; }
     const auto start = svcGetSystemTick();
     if (sMode == 1) __real_gdx_gfx_run(dl, bytes, ucode);
@@ -129,10 +176,18 @@ extern "C" void __wrap_gdx_gfx_run(void* dl, size_t bytes, int ucode) {
 }
 
 extern "C" void __wrap_gdx_vi_present_fallback(void) {
-    if (sMode != 2) __real_gdx_vi_present_fallback();
+    if (sMode != 2 && !(sReplay && sReplayGraphics == 2)) __real_gdx_vi_present_fallback();
 }
 
 extern "C" void gdx3ds_benchmark_finish(void) {
+    if (sReplay) {
+        if (sFinished) return;
+        sFinished = true;
+        if (gdx_replay_close(sReplayComplete && !sReplayFailed) < 0 ||
+            std::rename(kReplayTemporary, kReplayOutput) != 0) ReplayFailure();
+        else Receipt(sReplayComplete ? "[replay] complete capture saved" : "[replay] INCOMPLETE capture saved");
+        return;
+    }
     if (!sMode || sFinished) return;
     sFinished = true;
     MemoryReceipt("end");
@@ -160,4 +215,21 @@ extern "C" void gdx3ds_benchmark_finish(void) {
     if (std::fclose(output) != 0) ok = false;
     if (ok && std::rename(temporary, kOutput) != 0) ok = false;
     Receipt(ok ? "[m0] capture saved" : "[m0] ERROR writing capture");
+}
+
+extern "C" void gdx3ds_replay_input(GdxInputPad pads[4], unsigned char present[4]) {
+    if (!sReplay) return;
+    unsigned int state[20];
+    gdx3ds_replay_state(state);
+    int result = sReplayFailed ? -1 : gdx_replay_poll(pads, present, state);
+    if (result < 0) {
+        std::memset(pads, 0, sizeof(GdxInputPad) * 4);
+        std::memset(present, 0, 4);
+        ReplayFailure();
+    } else if (!result) {
+        gdx_request_quit();
+    } else if (state[19]) {
+        sReplayComplete = true;
+        if (sReplay == 1) gdx_request_quit();
+    }
 }

@@ -722,6 +722,20 @@ void gdx_controller_poll(void) {
         stick_y[0] = scriptPad.stickY;
     }
 
+#ifdef GDX3DS_BENCHMARK
+    {
+        extern void gdx3ds_replay_input(GdxInputPad pads[4], unsigned char present[4]);
+        GdxInputPad pads[4];
+        for (i = 0; i < 4; ++i) {
+            pads[i].buttons = buttons[i]; pads[i].stickX = stick_x[i]; pads[i].stickY = stick_y[i];
+        }
+        gdx3ds_replay_input(pads, connected);
+        for (i = 0; i < 4; ++i) {
+            buttons[i] = pads[i].buttons; stick_x[i] = pads[i].stickX; stick_y[i] = pads[i].stickY;
+        }
+    }
+#endif
+
     // Publish presence BEFORE the per-port update: a port that just went away has its Controller
     // cleared in here, and clearing it after the update would throw away the frame we just read.
     gdx_sync_controller_ports(connected);

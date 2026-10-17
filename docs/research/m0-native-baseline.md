@@ -103,3 +103,7 @@ Before claiming OG feasibility, measure actual OG simulation/audio timing and
 memory fit, implement the native scene path, and run the integrated full-quality
 race there. The current legacy benchmark may itself exceed OG memory; that does
 not substitute for testing the smaller native rendering harness.
+
+M0.5 extends this infrastructure with a separate bounded, poll-exact full-session
+replay stream and results-verified oracle. See [M0.5 race replay](m05-race-replay.md).
+Full manually driven race repeatability remains a separate acceptance gate.

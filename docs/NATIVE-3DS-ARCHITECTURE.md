@@ -525,3 +525,11 @@ audits can progress, but no frame-time or full-speed compatibility gate is met.
 Implementation progress and the first controlled emulator A/B are recorded in
 [M0 native baseline](research/m0-native-baseline.md). The build and extracted
 content are now available; OG hardware timing and memory gates remain open.
+
+## M0.5 replay preparation
+
+The diagnostic legacy build now has a bounded full-session, poll-exact replay
+stream and a semantic oracle including energy, camera and gameplay LOD state.
+See [the M0.5 workflow and acceptance gates](research/m05-race-replay.md).
+This preparatory implementation does not replace rendering, audio or scheduling;
+full manually driven race repeatability is still an explicit validation gate.

@@ -25,3 +25,5 @@ cd "$TEST_DIR"
 ./gfx_pack_tests
 ./gfx_convert_tests
 ./fs_host_smoke
+
+python3 -m unittest discover -s "$ROOT/tools/benchmark_3ds" -p 'test_*.py'
