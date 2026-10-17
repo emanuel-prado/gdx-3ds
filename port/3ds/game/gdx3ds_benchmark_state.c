@@ -81,7 +81,9 @@ void gdx3ds_benchmark_state(unsigned int out[11]) {
 /* Full-session oracle: no raw struct hashing, pointers, padding or matrices. */
 #include "fzx_camera.h"
 extern Camera gCameras[];
-extern s32 sGpRaceResultsState, gTitleDemoState, gTotalLapCount, gGamePaused;
+extern s32 sGpRaceResultsState, gTotalLapCount;
+/* Match game.c: widening these byte globals reads unrelated neighboring state. */
+extern s8 gTitleDemoState, gGamePaused;
 extern s32 sPlayerResultsTimer[4];
 void gdx3ds_replay_state(unsigned int out[20]) {
     u32 energy = 2166136261u, lod = 2166136261u, camera = 2166136261u;

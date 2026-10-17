@@ -7,9 +7,10 @@ Integration branch: `dev/native`, M1a merge `eb8fea2` (PR #1, implementation
 | Slice | Status | Owner / worktree / PR | Evidence / next gate |
 | --- | --- | --- | --- |
 | M0 controlled oracle | Validated emulator-only | Existing implementation | 1,000 selected fingerprints; physical timing open |
-| M0.5 session oracle | Implemented, acceptance open | Read-only test agent | Human unfinished `manual-race` preserved; inspect valid prefix, never relabel complete |
+| M0.5 session oracle | Implemented, full acceptance open | PR #4 endpoint repair | Real three-lap finish recovered diagnostically; corrected ranking detection verified; partial source never relabeled complete |
 | M1a Blue Falcon LOD2 | Integrated; hardware-pending | PR #1 | Independent review, fresh host/build/Azahar pass below |
-| M1b texture compiler | Running | Asset agent `/tmp/gdx-native-m1b`, `experiment/native-3ds-m1b-textures` | Extract complete tile catalog and native RGBA8 layout; host gate first |
+| M1b texture compiler | Integrated | PR #3, `26646c4` | 25 tests, independent review; eight tiles, 18,432 GPU bytes; native sampling pending |
+| M1b native texture upload | Running | Asset agent `/tmp/gdx-native-upload`, `experiment/native-3ds-m1b-upload` | Fixed binary loader and independent PICA swatch harness; original materials remain pending |
 | M1b native materials/lighting | Pending | Integrator | Runtime sampling + exact material/FLX semantics + reference comparison |
 | M1c/M1d | Pending | Unassigned | Families/LODs/crowd and procedural course geometry |
 | M2–M7 | Pending | Unassigned | See architecture; no full-game or hardware acceptance claimed |
@@ -37,6 +38,16 @@ Integration branch: `dev/native`, M1a merge `eb8fea2` (PR #1, implementation
 
 ## Decisions and risks
 
+- PR #3 compiles all eight texture tiles with original RDP component expansion,
+  correcting two inherited legacy importer approximations. See
+  [texture evidence](m1b-textures.md). Native materials are still incomplete.
+- The original unfinished recording contains a genuine first-place 98.192-second
+  three-lap finish. Two incorrectly widened byte-global reads prevented results
+  detection. The corrected build reproduces all 8,236 input/semantic snapshots
+  through ranking except the now-correct final results word. See
+  [endpoint diagnosis](replay-endpoint.md). Diagnostic source/output are partial;
+  required boost/combat/pause coverage and full accepted cold replays remain open.
+
 - No display-list interpreter in standalone native harness; original runtime
   retained only as reference. No gameplay/RNG/LOD/save changes in M1a.
 - Blue Falcon material tile 0 inherits shared setup texture; include it explicitly.
@@ -58,13 +69,12 @@ replays; partial data can only support diagnostic prefix work.
 ## Recovery / exact next task
 
 1. Check remote `dev/native`, open PRs and `git worktree list` before resuming.
-2. Finish the isolated M1b texture compiler, run synthetic and real-archive tests,
-   independently review output byte order/layout and tile coverage, draft PR to
-   `dev/native`, integrate only its bounded host gate.
-3. Implement native texture/material sampling with preserved M1a harness and
+2. Finish the isolated native texture upload harness and C loader, test corruption
+   and real GPU output, independently review, then PR/integrate its bounded gate.
+3. Implement native machine material sampling with preserved M1a harness and
    explicit format/version boundary; validate matching-camera visual captures.
-4. Inspect manual-race diagnostic prefix report; repair any demonstrated oracle
-   endpoint/control defect before asking for a replacement fixture.
+4. Finish the independent repaired-endpoint cold-boot repeat and graphics-bypass
+   diagnostic comparison; retain explicit partial-data labels and originals.
 
 Do not infer agents are running after the session ends. Reassign these concrete
 steps if interrupted. All hardware, full-race and full-game gates remain open.
