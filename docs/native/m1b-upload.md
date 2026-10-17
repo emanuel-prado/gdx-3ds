@@ -13,13 +13,21 @@ python3 tools/native_assets/compile_upload.py \
   --bundle dist/native/sdmc/3ds/gdiffuser-native/blue-falcon-textures.gdnt
 python3 -m unittest discover -s tools/native_assets -p 'test_native*.py' -v
 bash tools/dev.sh native-build
+python3 tools/native_assets/run_swatch.py my-upload-run
+# Optional manual launch, after staging a separate isolated profile:
 timeout --signal=TERM --kill-after=5s 45s \
   bash tools/azahar.sh build-3ds-native/gdx-native-swatch.3dsx
 ```
 
 Use an isolated Azahar profile and mount/copy
 `dist/native/sdmc/3ds/gdiffuser-native-swatch/textures.gdns` to its SD directory.
-The command above is a bounded manual launch, not an automated acceptance test;
+The `run_swatch.py` command stages a fresh isolated OG-model profile, requires
+completion, compares all 4,612 source-derived RGB/marker samples and verifies
+process-group cleanup. It writes hashes, logs and a JSON report under ignored
+`experiments/local/native-swatch/<label>/`. Use a new label for every run.
+`--expect-rejection --pack <corrupted-copy>` instead requires pack validation
+failure before any GPU upload. The optional timeout command is a bounded manual
+launch, not an automated acceptance test;
 close only the launched process group as soon as the test completes and verify
 the wrapper/emulator have exited. Original-3DS users launch the distinct
 `gdx-native-swatch.3dsx` from HBL with the same native-swatch SD directory.
@@ -123,3 +131,9 @@ this direction for the tilted orthographic projection and framebuffer transform.
   swatch upload in Azahar; physical original-3DS upload, memory and lifecycle
   acceptance remain pending. This static scene is not a machine-fidelity or
   performance benchmark.
+- The reusable runner repeats this result on the integration build in
+  `upload-final-a`: 4,612 exact RGB samples and cleanup pass. In
+  `corrupt-rejected-a`, a one-byte payload mutation is rejected with validation
+  error/status 1 before GPU upload. Both host process inspections confirm the
+  emulator and wrapper exited. These receipts remain under the same ignored
+  `experiments/local/native-swatch/` directory.
