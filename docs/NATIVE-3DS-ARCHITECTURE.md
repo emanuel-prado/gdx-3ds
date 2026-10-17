@@ -533,3 +533,11 @@ stream and a semantic oracle including energy, camera and gameplay LOD state.
 See [the M0.5 workflow and acceptance gates](research/m05-race-replay.md).
 This preparatory implementation does not replace rendering, audio or scheduling;
 full manually driven race repeatability is still an explicit validation gate.
+
+## M1a standalone machine slice
+
+The isolated Blue Falcon LOD2 pack/compiler and native PICA200 harness now provide
+the first real-asset slice. They do not integrate a native game loop or replace
+the reference renderer. See [the implementation report](research/m1a-native-machine.md)
+and [reproduction/hardware instructions](../tools/native_assets/README.md).
+Original hardware feasibility and original material fidelity remain open gates.

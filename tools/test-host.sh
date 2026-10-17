@@ -27,3 +27,5 @@ cd "$TEST_DIR"
 ./fs_host_smoke
 
 python3 -m unittest discover -s "$ROOT/tools/benchmark_3ds" -p 'test_*.py'
+
+python3 -m unittest discover -s "$ROOT/tools/native_assets" -p 'test_*.py'

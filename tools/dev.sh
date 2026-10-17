@@ -11,6 +11,7 @@ Usage: bash tools/dev.sh COMMAND [arguments]
   build [--jobs N]  Apply the patch stack, run host tests, build 3DS game + harness
   test              Run portable host tests
   extractor         Build/install the host gdx-extract asset converter
+  native-build      Build isolated native M1a mesh harness in build-3ds-native/
   benchmark-build   Build opt-in M0 diagnostics in build-3ds-benchmark/
   cia               Build the CIA (same title ID as upstream; do not install over it)
   run COMMAND ...   Run a command in the development container
@@ -26,6 +27,7 @@ case "${1:-}" in
     build) shift; set -- bash tools/ci-3ds.sh "$@" ;;
     test) set -- bash tools/test-host.sh ;;
     extractor) shift; set -- bash tools/docker/build-extractor.sh "$@" ;;
+    native-build) set -- bash tools/docker/build-native.sh ;;
     benchmark-build) set -- bash tools/docker/build-benchmark.sh ;;
     cia) set -- cmake --build build-3ds --target G-Diffuser-3DS-cia --parallel "${GDX_JOBS:-4}" ;;
     run) shift; [ "$#" -gt 0 ] || { usage; exit 2; } ;;
