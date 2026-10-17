@@ -75,9 +75,26 @@ GDX_TEST_DECOMP=/path/to/gdx-3ds/decomp \
   python3 -m unittest discover -s tools/benchmark_3ds -p 'test_*.py'
 ```
 
+## Cross-build and diagnostic replay
+
+The corrected diagnostic `.3dsx` cross-build passes in the existing Docker
+toolchain. A fresh cold boot using the unchanged preserved input in replay mode
+2 observes `results=1` at poll 8,235, game tick 8,095: course 0, 30 racers,
+position 1, race time 98,192 ms and lapsCompleted=4. Comparing all 8,236 input
+polls and semantic snapshots to the original yields exactly one difference:
+the corrected results word at poll 8,235. The pause/camera hashes happen to match
+in this recording; this does not make the old widened read safe.
+
+Receipt: ignored `experiments/local/replay/endpoint-fixed-render-a/`, including
+binary/source identities, report and `original-prefix-comparison.json`.
+The bounded diagnostic stopped once the freshly generated endpoint was observed;
+its capture remains partial and **unaccepted**. No footer was synthesized and
+the original recording was not modified. Test process-group cleanup and host
+inspection confirmed both the emulator and wrapper exited.
+
 ## Exact next test
 
-Cross-build the corrected benchmark, then copy the unchanged preserved temporary
+For an independent repeat, copy the unchanged preserved temporary
 recording into a fresh isolated profile as `session.gdr`, with replay mode 2.
 Run it under a bounded timeout, monitor the new `capture.gdr.tmp` for the freshly
 observed ranking endpoint, then close the test emulator. The source stream will
