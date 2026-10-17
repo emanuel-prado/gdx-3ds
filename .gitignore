@@ -117,3 +117,7 @@ build-port-host/
 # Local CIA packaging binaries (makerom, bannertool) -- downloaded/built per
 # port/3ds/packaging/README.md, never committed.
 /tools/3ds-bin/
+
+# Full-session controller recordings and temporary captures (local fixtures only)
+*.gdr
+*.gdr.tmp

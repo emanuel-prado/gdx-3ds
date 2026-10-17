@@ -128,3 +128,9 @@ energy 0.1 when damage would otherwise destroy it; LOD also gates effects using
 shared RNG. Native rendering must preserve that original gameplay classification
 separately from visual LOD and extended draw distance. The native plan now records
 this requirement explicitly.
+
+## M0.5 full-session recording and replay
+
+See [the full-race replay workflow](../../docs/research/m05-race-replay.md) for
+manual recording, metadata validation, independent replay runs, cross-build
+comparison, wire format, resource bounds and remaining acceptance gates.

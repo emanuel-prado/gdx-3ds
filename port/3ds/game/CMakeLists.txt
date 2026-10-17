@@ -144,3 +144,8 @@ set_target_properties(gdx3ds_glue PROPERTIES
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS ON
 )
+
+if(GDX3DS_BENCHMARK)
+    target_sources(gdx3ds_glue PRIVATE "${GDX_PORT_DIR}/gdx_replay.c")
+    target_compile_definitions(gdx3ds_glue PRIVATE GDX3DS_BENCHMARK=1)
+endif()
