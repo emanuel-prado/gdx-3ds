@@ -92,9 +92,25 @@ its capture remains partial and **unaccepted**. No footer was synthesized and
 the original recording was not modified. Test process-group cleanup and host
 inspection confirmed both the emulator and wrapper exited.
 
+A second independent rendered cold boot, `endpoint-fixed-render-b`, reaches the
+same results poll and matches all 8,236 input/state snapshots exactly. Its
+immediate cleanup check raced with an exiting child; subsequent host process
+inspection confirmed no emulator or wrapper remained, recorded separately in
+the local report.
+
+The unchanged input with graphics bypass **fails equivalence**. First differences
+are at poll 126, tick 0: mode `32768 -> 0`, RNG fingerprint
+`3927072910 -> 951537753`; tick progression differs at poll 127. This is a boot
+divergence, not a failure to complete the recorded driving. The test was stopped
+once the failure was captured; cleanup and host inspection passed. Receipt:
+`experiments/local/replay/endpoint-fixed-bypass-a/render-prefix-comparison.json`.
+Do not mask this prefix, insert a race reset, or call full-session bypass accepted.
+The controlled M0 race-start comparison has a different initialization contract
+and does not override this failure.
+
 ## Exact next test
 
-For an independent repeat, copy the unchanged preserved temporary
+To reproduce the bypass failure, copy the unchanged preserved temporary
 recording into a fresh isolated profile as `session.gdr`, with replay mode 2.
 Run it under a bounded timeout, monitor the new `capture.gdr.tmp` for the freshly
 observed ranking endpoint, then close the test emulator. The source stream will
