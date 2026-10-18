@@ -1,8 +1,9 @@
 # Native port campaign
 
 Updated 2026-10-17. Core status: **unqualified; implementation in progress**.
-Integration branch: `dev/native`, M1a merge `eb8fea2` (PR #1, implementation
-`9b3c520`). Preserve the ordinary legacy reference executable throughout.
+Integration branch: `dev/native`, base `83a561f` after PR #5. M1a merged in
+`eb8fea2` (PR #1, implementation `9b3c520`). Preserve the ordinary legacy
+reference executable throughout.
 
 | Slice | Status | Owner / worktree / PR | Evidence / next gate |
 | --- | --- | --- | --- |
@@ -10,8 +11,8 @@ Integration branch: `dev/native`, M1a merge `eb8fea2` (PR #1, implementation
 | M0.5 session oracle | Endpoint repaired; bypass failing | PR #4 integrated; `/tmp/gdx-native-bypass` diagnosis | Two rendered cold prefixes match through results; bypass diverges at poll 126 before race; full acceptance open |
 | M1a Blue Falcon LOD2 | Integrated; hardware-pending | PR #1 | Independent review, fresh host/build/Azahar pass below |
 | M1b texture compiler | Integrated | PR #3, `26646c4` | 25 tests, independent review; eight tiles, 18,432 GPU bytes; native sampling pending |
-| M1b native texture upload | Validated; integrating PR #5 | Integrator `experiment/native-3ds-upload-verification` | Two 120-frame pixel runs pass; runtime corruption rejected before upload; hardware pending |
-| M1b textured machine diagnostic | Running | Asset agent `/tmp/gdx-native-materials` | Two finite combiners on original geometry; shade/FLX fidelity remains a later required gate |
+| M1b native texture upload | Integrated | PR #5, merge `83a561f` | Two 120-frame pixel runs pass; runtime corruption rejected before upload; hardware pending |
+| M1b textured machine diagnostic | Validated; preparing PR | Integrator `experiment/native-materials-integration`; source `41ff400` | 360 frames; 4,608 material samples error ≤1; unknown recipe rejected; shade/FLX fidelity pending |
 | M1b native materials/lighting | Pending | Integrator | Runtime sampling + exact material/FLX semantics + reference comparison |
 | M1c/M1d | Pending | Unassigned | Families/LODs/crowd and procedural course geometry |
 | M2–M7 | Pending | Unassigned | See architecture; no full-game or hardware acceptance claimed |
@@ -53,6 +54,14 @@ Integration branch: `dev/native`, M1a merge `eb8fea2` (PR #1, implementation
   effects without hiding the prefix or resetting game state. The test was closed
   and its first-difference report is preserved locally.
 
+- Bypass boot timing depends on a ~3.833-second wall-clock logo hold: identical
+  title-entry mode/RNG occurs at poll 126 rendered versus 241 bypass. See
+  [clock audit](replay-clock.md). No fixture prefix was masked or clock changed.
+- Textured-machine diagnostic uses eight actual textures, stock initial skin,
+  signed-UV shader and two finite native combiners. Declared shade=1/q=0 and
+  nearest sampler are not original lighting/filter fidelity. See
+  [material gate](m1b-materials.md). 33 native + 22 oracle tests and all three
+  portable suites pass; all three standalone native builds pass.
 - No display-list interpreter in standalone native harness; original runtime
   retained only as reference. No gameplay/RNG/LOD/save changes in M1a.
 - Blue Falcon material tile 0 inherits shared setup texture; include it explicitly.
@@ -74,11 +83,19 @@ replays; partial data can only support diagnostic prefix work.
 ## Recovery / exact next task
 
 1. Check remote `dev/native`, open PRs and `git worktree list` before resuming.
-2. Integrate PR #5: final reusable-runner and runtime corruption checks pass.
-3. Finish native machine material sampling with preserved M1a harness and
-   explicit format/version boundary; validate matching-camera visual captures.
+2. Open/integrate the validated material diagnostic PR after CI. Implementation
+   `41ff400` is independently reviewed and GPU-tested; all test emulators closed.
+3. Next executable graphics task: original directional/ambient vertex lighting
+   plus FLX LUT-derived vertex alpha and highlight blending. Read the precise
+   [material audit](m1b-material-audit.md), compile private LUT data from verified
+   source inputs, and test GPU output against known normal/light/LUT vectors
+   before matching-camera comparison. Keep the unlit diagnostic available;
+   do not use it as an unsupported-material fallback.
 4. Diagnose the observed poll-126 full-session bypass divergence in the isolated
    bypass worktree; retain explicit partial-data labels and originals.
 
-Do not infer agents are running after the session ends. Reassign these concrete
+Two implementation agents hit a service usage limit; their material work was
+finished serially by the integrator with a separate review agent. Their proposed
+bypass clock change was not implemented. Do not infer agents are running after
+the session ends. Reassign these concrete
 steps if interrupted. All hardware, full-race and full-game gates remain open.
